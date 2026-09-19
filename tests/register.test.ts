@@ -232,7 +232,7 @@ describe('register', () => {
     await $.session.start({ surface: 'terminal', isInteractive: true, cwd: '/work' });
 
     const before = await $.command.run({ command: 'jev', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 120 } });
-    expect(before.text).toContain('jev-context model=typesafe/jev-1.13 key=set');
+    expect(before.text).toStartWith('model=typesafe/jev-1.13 key=set');
     expect(before.text).toContain('no compaction yet');
 
     await $.session.compact({ trigger: 'manual', messages: transcript() });

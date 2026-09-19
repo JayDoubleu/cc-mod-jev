@@ -36,6 +36,11 @@ type Activation = {
   skippedAtPercent: number;
 };
 
+/**
+ * The engine prefixes every toast, log line and command answer with the
+ * plugin's name, so the texts below carry none.
+ */
+
 /** One line per scored call: `t3:Bash:drop_call/call=0.12/result=0.08`. */
 export function decisionLines(result: CompactResult): string[] {
   return result.decisions
@@ -138,7 +143,7 @@ function transportOf($: EngineInterface): Transport {
 }
 
 async function log($: EngineInterface, config: Config, text: string): Promise<void> {
-  await $.ui.log(`${PLUGIN}: ${text}`, { to: config.log });
+  await $.ui.log(text, { to: config.log });
 }
 
 /** Records a compaction the plugin did not do and says why. */
@@ -165,7 +170,7 @@ async function noteFallback(
 
 /** The `/jev` status text. */
 function statusText(activation: Activation, config: Config): string {
-  const lines = [`${PLUGIN} ${describeConfig(config)}`];
+  const lines = [describeConfig(config)];
   const last = activation.last;
   if (last) {
     lines.push(`last compaction (${last.trigger}): ${last.outcome}${last.reason ? `, ${last.reason}` : ''}`);
@@ -215,14 +220,14 @@ export const register: Register = (on, options) => {
         const summary = summarize(result);
         const lines = decisionLines(result);
         for (const chunk of chunkLines(lines)) {
-          await $.ui.log(`${PLUGIN} decisions: ${chunk}`, { to: 'debug' });
+          await $.ui.log(`decisions: ${chunk}`, { to: 'debug' });
         }
         if (ratio >= config.minReductionRatio) {
           activation.last = { trigger: e.trigger, outcome: 'pruned', summary, decisions: lines };
           activation.skippedAtPercent = -1;
           await log($, config, `pruned verbatim, no summary: ${summary}`);
           await $.ui.toast(
-            `${PLUGIN}: kept ${result.messages.length}/${e.messages.length} messages verbatim, ${Math.round(ratio * 100)}% fewer chars`,
+            `kept ${result.messages.length}/${e.messages.length} messages verbatim, ${Math.round(ratio * 100)}% fewer chars`,
             { timeoutMs: 8000 },
           );
           return { messages: result.messages as SessionMessage[] };
