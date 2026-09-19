@@ -1,6 +1,6 @@
 {
   "name": "jev-context",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Jev-scored context pruning for Claude Code through OpenRouter: at compaction every tool call and result is scored by TypeSafe's Jev decision model, stale ones are dropped or truncated, everything kept stays verbatim. An optional gate truncates oversized tool outputs as they arrive.",
   "author": {
     "name": "Jay W",
