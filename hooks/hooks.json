@@ -1,0 +1,4 @@
+{
+  "description": "Jev-scored context pruning: session.compact returns the transcript minus the tool calls and results Jev judged stale, turn.complete requests a compaction when the context is full enough, tool.call optionally gates oversized outputs, and /jev reports the configuration and the last decisions.",
+  "modules": ["./jev-context.ts"]
+}

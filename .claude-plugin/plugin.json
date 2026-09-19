@@ -1,0 +1,86 @@
+{
+  "name": "jev-context",
+  "version": "0.1.0",
+  "description": "Jev-scored context pruning for Claude Code through OpenRouter: at compaction every tool call and result is scored by TypeSafe's Jev decision model, stale ones are dropped or truncated, everything kept stays verbatim. An optional gate truncates oversized tool outputs as they arrive.",
+  "author": {
+    "name": "Jay W",
+    "url": "https://github.com/JayDoubleu"
+  },
+  "license": "MIT",
+  "keywords": ["context", "compaction", "jev", "openrouter", "mod", "function-hooks"],
+  "userConfig": {
+    "apiKey": {
+      "type": "string",
+      "title": "OpenRouter API key",
+      "description": "Leave unset to read OPENROUTER_API_KEY (or EVAL_OPENROUTER_API_KEY under plugin evals) from the environment.",
+      "sensitive": true
+    },
+    "model": {
+      "type": "string",
+      "title": "Jev model id on OpenRouter",
+      "description": "The model sent to the OpenRouter decisions endpoint.",
+      "default": "typesafe/jev-1.13"
+    },
+    "keepThreshold": {
+      "type": "number",
+      "title": "Keep threshold",
+      "description": "Minimum Jev probability (0 to 1) that a tool call or its result is still needed. Below it the item is truncated or removed.",
+      "default": 0.5
+    },
+    "preserveRecentMessages": {
+      "type": "number",
+      "title": "Recent messages to preserve",
+      "description": "The newest messages are never pruned. The first message is never pruned either.",
+      "default": 6
+    },
+    "compactAtPercent": {
+      "type": "number",
+      "title": "Compaction trigger (context percent)",
+      "description": "After a turn, when the context window is at least this full, the plugin requests a compaction. Set to 0 to disable the trigger and rely on /compact and the engine's own auto-compaction.",
+      "default": 60
+    },
+    "minReductionRatio": {
+      "type": "number",
+      "title": "Minimum reduction ratio",
+      "description": "Pruning must remove at least this fraction of the transcript's characters. Otherwise /compact and auto-compaction fall back to the built-in summary, and plugin-triggered compactions are skipped.",
+      "default": 0.2
+    },
+    "truncateHeadChars": {
+      "type": "number",
+      "title": "Truncated result head",
+      "description": "Characters of a tool result kept when Jev decides the call still matters but its full output does not.",
+      "default": 300
+    },
+    "gate": {
+      "type": "boolean",
+      "title": "Gate oversized tool outputs",
+      "description": "Experimental. Ask Jev whether a fresh oversized tool output is needed in full; if not, the model receives its head and tail with a note.",
+      "default": false
+    },
+    "gateTools": {
+      "type": "string",
+      "title": "Gated tools",
+      "description": "Comma-separated tool names the gate applies to. Bash truncates stdout head and tail; Read keeps the head of the file.",
+      "default": "Bash"
+    },
+    "gateMinChars": {
+      "type": "number",
+      "title": "Gate minimum size",
+      "description": "Outputs shorter than this many characters are never gated.",
+      "default": 8000
+    },
+    "gateThreshold": {
+      "type": "number",
+      "title": "Gate threshold",
+      "description": "An output is truncated only when Jev's probability that the full output is needed is below this value.",
+      "default": 0.3
+    },
+    "log": {
+      "type": "string",
+      "title": "Where to log decisions",
+      "description": "transcript shows a dim line per compaction in the session; debug keeps it to the debug log.",
+      "options": ["transcript", "debug"],
+      "default": "transcript"
+    }
+  }
+}

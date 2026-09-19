@@ -1,0 +1,20 @@
+{
+  "name": "jev-context",
+  "version": "0.1.0",
+  "description": "Claude Code mod: Jev-scored context pruning through OpenRouter.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin test .",
+    "validate": "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin validate .",
+    "eval": "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude plugin eval . --trust-plugin",
+    "smoke": "bun run scripts/smoke.ts && scripts/gate-smoke.sh",
+    "types": "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS=1 claude -p /plugin-types",
+    "check": "npm run typecheck && npm run validate && npm test"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

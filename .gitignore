@@ -1,0 +1,6 @@
+.env
+node_modules/
+dist/
+evals/results/
+.claude/types/claude-code-plugins.d.ts
+.claude/types/claude-code-mcp.d.ts

@@ -1,0 +1,17 @@
+{
+  "name": "cc-mod-jev",
+  "description": "Jev-scored context pruning for Claude Code through OpenRouter.",
+  "owner": {
+    "name": "Jay W",
+    "url": "https://github.com/JayDoubleu"
+  },
+  "plugins": [
+    {
+      "name": "jev-context",
+      "source": "./",
+      "description": "Jev-scored context pruning for Claude Code through OpenRouter: verbatim compaction plus an optional gate on oversized tool outputs.",
+      "version": "0.1.0",
+      "license": "MIT"
+    }
+  ]
+}
