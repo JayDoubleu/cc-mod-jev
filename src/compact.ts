@@ -161,6 +161,7 @@ export async function compact(
       noulOf(answers, callQuestionName(call)),
       noulOf(answers, resultQuestionName(call)),
       options.keepThreshold,
+      options.truncateHeadChars,
     );
     decisions.push(decision);
     if (decision.action === 'keep') stats.kept += 1;

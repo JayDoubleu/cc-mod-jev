@@ -216,6 +216,16 @@ describe('register', () => {
     expect(w.logs[0]).toContain('kept');
   });
 
+  test('a precompute compaction is skipped without a request', async ($, on) => {
+    const w = world(on);
+
+    const out = await $.session.compact({ trigger: 'precompute', messages: transcript() });
+
+    expect(out.skip).toContain('jev-context');
+    expect(w.requests).toEqual([]);
+    expect(w.coreCompactions).toEqual([]);
+  });
+
   test('the gate is off by default', async ($, on) => {
     const w = world(on);
     const stdout = 'line\n'.repeat(4000);

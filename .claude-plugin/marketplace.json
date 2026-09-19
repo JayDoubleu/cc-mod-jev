@@ -10,7 +10,7 @@
       "name": "jev-context",
       "source": "./",
       "description": "Jev-scored context pruning for Claude Code through OpenRouter: verbatim compaction plus an optional gate on oversized tool outputs.",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "license": "MIT"
     }
   ]

@@ -13,16 +13,15 @@ export type GateOptions = {
 
 export const GATE_QUESTION = 'need_full_output';
 
-/** The text a fresh tool result puts in front of the model, per tool. */
-export function outputOf(tool: string, result: unknown, text?: string): string | undefined {
-  if (typeof text === 'string' && text.length > 0) return text;
+/**
+ * The part of a fresh tool result the gate can cut, per tool: Bash's stdout,
+ * Read's file content. Undefined for any other tool or shape, so the gate
+ * never judges an output it could not cut.
+ */
+export function outputOf(tool: string, result: unknown): string | undefined {
   if (result === null || typeof result !== 'object') return undefined;
   const record = result as Record<string, unknown>;
-  if (tool === 'Bash') {
-    const stdout = typeof record.stdout === 'string' ? record.stdout : '';
-    const stderr = typeof record.stderr === 'string' ? record.stderr : '';
-    return stderr ? `${stdout}\n${stderr}` : stdout;
-  }
+  if (tool === 'Bash') return typeof record.stdout === 'string' ? record.stdout : undefined;
   if (tool === 'Read') {
     const file = record.file;
     if (file && typeof file === 'object') {
@@ -41,13 +40,14 @@ export function cutOutput(output: string, head: number, tail: number, hint: stri
   return `${output.slice(0, head)}${note}${tail > 0 ? output.slice(-tail) : ''}`;
 }
 
-/** The state the gate sends: the goal, the recent conversation, and the call. */
+/** The state the gate sends: the goal (explicit, else the last prompts), the recent conversation, and the call. */
 export function gateState(
   recent: readonly Message[],
   tool: string,
   input: Record<string, unknown>,
   output: string,
   options: Pick<GateOptions, 'gateHeadChars' | 'gateTailChars'>,
+  goal?: string,
 ): JevState {
   const conversation = recent.slice(-12).map((message) => {
     const entry: Record<string, unknown> = { role: message.role };
@@ -62,7 +62,7 @@ export function gateState(
   const head = Math.min(1500, options.gateHeadChars);
   const tail = Math.min(800, options.gateTailChars);
   return {
-    goal: goalOf(recent),
+    goal: goalOf(recent, goal),
     recent_conversation: conversation,
     new_tool_result: {
       tool,

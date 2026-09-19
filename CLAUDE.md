@@ -24,7 +24,7 @@ pruning through OpenRouter. Read `README.md` for behaviour and configuration.
 ## Rules the hooks loader enforces
 
 - Pass `$` only to functions declared at the top level of the hooks module.
-- Call `$.env.get` with a literal name. Add a new variable to `configOf` and to `resolveConfig`.
+- Call `$.env.get` with a literal name. A new option needs its two variables in `configOf` (the `Promise.all` list) and its key in `CONFIG_KEYS`.
 - Every `$` call is spelled `$.noun.event(...)` at the call site.
 - Hook code has a 10 s budget per dispatch; time spent inside `$.http.fetch` and `next(e)` does not count.
 - `$.session.compact()` is refused from a `command.run` hook (it would compact under the turn the hook holds). Call it from `turn.complete`.

@@ -49,15 +49,18 @@ Both variables can also live in `~/.claude/settings.json`:
   pruned messages are returned in place of a summary. If the key is missing,
   Jev fails, or the pruning would remove less than `minReductionRatio` of the
   transcript's characters, `/compact` and auto-compaction fall back to the
-  built-in summary. A plugin-triggered compaction is skipped instead.
+  built-in summary. A plugin-triggered compaction is skipped instead, and so
+  is the engine's `precompute` dispatch, so every real compaction is scored
+  live.
 - `turn.complete`: after each main-loop turn, if the context window is at
   least `compactAtPercent` full, the plugin requests a compaction. After a
   skip it waits until the window grew 10 more points before trying again.
-- `tool.call` (the gate, off by default): after a gated tool returns an output
-  of at least `gateMinChars`, Jev is asked whether the model needs the full
-  output. Below `gateThreshold`, Bash keeps the head and tail of stdout, and
-  Read keeps the head of the file, each with a note saying what was cut and
-  how to get it back.
+- `tool.call` (the gate, off by default): after a gated tool returns, on the
+  main loop only, and the part the gate can cut (Bash's stdout, Read's file
+  content) is at least `gateMinChars`, Jev is asked whether the model needs
+  the full output. Below `gateThreshold`, Bash keeps the head and tail of
+  stdout, and Read keeps the head of the file, each with a note saying what
+  was cut and how to get it back.
 - `command.run`: `/jev` prints the configuration, the last compaction and its
   per-call decisions, and the gate decisions. `/compact` prunes now, since it
   goes through the `session.compact` hook.
@@ -83,6 +86,25 @@ Both variables can also live in `~/.claude/settings.json`:
    result to `truncateHeadChars` plus a note; else the pair is removed.
 5. Untouched messages go back as the engine's own objects. A message that
    loses all its content disappears. No result is left without its call.
+
+## Measured
+
+One interactive session on a 1M-context model, Claude Code 2.1.278, the
+plugin at its defaults. The model read the 8 largest files of a repository,
+ran `git log`, `find`, `grep`, `git status` and `git branch`: 22 tool calls,
+541,928 characters of results, 314,058 tokens of context. Then `/compact`:
+
+| | |
+| --- | --- |
+| Context after, as the engine recorded it | 11,399 tokens (96% fewer) |
+| Messages kept | 47 of 51, none rewritten |
+| Calls scored | 19: 0 kept whole, 17 truncated to their head, 2 dropped |
+| Jev | 1 request, 7,776 input tokens, $0.00033, 503 ms end to end |
+
+Afterwards the model named the 8 files and quoted the first line of the
+largest one from the kept head without a tool call. Asked about the last test
+function in that file, past the cut, it ran one `grep` and answered
+correctly, as the truncation note tells it to.
 
 ## Configuration
 

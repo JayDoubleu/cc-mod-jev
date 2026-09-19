@@ -135,6 +135,8 @@ describe('questions and decisions', () => {
     expect(decide(callOne!, 0.9, 0.1, 0.5).action).toBe('truncate_result');
     expect(decide(callOne!, 0.1, 0.1, 0.5).action).toBe('drop_call');
     expect(decide(callOne!, 0.4, 0.4, 0.3).action).toBe('keep');
+    expect(decide(callOne!, 0.9, 0.1, 0.5, FILE_A.length).action).toBe('keep');
+    expect(decide(callOne!, 0.9, 0.1, 0.5, FILE_A.length - 1).action).toBe('truncate_result');
   });
 
   test('batchCalls splits the questions by the request budget and rejects an impossible one', async () => {
@@ -251,17 +253,19 @@ describe('config', () => {
     expect(resolveConfig({}, { EVAL_OPENROUTER_API_KEY: 'eval' }).apiKey).toBe('eval');
     expect(resolveConfig({}, { OPENROUTER_API_KEY: 'env', EVAL_OPENROUTER_API_KEY: 'eval' }).apiKey).toBe('env');
     expect(resolveConfig({ keepThreshold: 'nope' }, { JEV_CONTEXT_GATE_TOOLS: 'Read' })).toMatchObject({ keepThreshold: 0.5, gateTools: ['Read'] });
+    expect(resolveConfig({ model: 'mine', gate: true }, { JEV_CONTEXT_MODEL: '', JEV_CONTEXT_GATE: ' ' })).toMatchObject({ model: 'mine', gate: true });
+    expect(resolveConfig({}, { EVAL_JEV_CONTEXT_GATE_HEAD_CHARS: '6000', JEV_CONTEXT_MAX_STATE_TOKENS: '15000' })).toMatchObject({ gateHeadChars: 6000, maxStateTokens: 15000 });
   });
 });
 
 describe('gate', () => {
   const options = { gateTools: ['Bash'], gateMinChars: 100, gateThreshold: 0.3, gateHeadChars: 20, gateTailChars: 10 };
 
-  test('reads the output of a Bash or Read record', async () => {
-    expect(outputOf('Bash', { stdout: 'out', stderr: 'err' })).toBe('out\nerr');
+  test('reads the part of a Bash or Read record it can cut', async () => {
+    expect(outputOf('Bash', { stdout: 'out', stderr: 'err' })).toBe('out');
+    expect(outputOf('Bash', { stderr: 'err only' })).toBeUndefined();
     expect(outputOf('Read', { type: 'text', file: { content: 'body' } })).toBe('body');
     expect(outputOf('Grep', { content: 'x' })).toBeUndefined();
-    expect(outputOf('Grep', {}, 'text wins')).toBe('text wins');
   });
 
   test('cuts the middle of a Bash stdout and the tail of a Read', async () => {

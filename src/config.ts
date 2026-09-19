@@ -120,15 +120,18 @@ function asString(value: Raw): string | undefined {
 /**
  * The plugin's configuration: the manifest's `userConfig` values, overridden
  * by `JEV_CONTEXT_*` and then `EVAL_JEV_CONTEXT_*` environment variables (the
- * latter so a plugin eval can configure a run). The API key comes from the
+ * latter so a plugin eval can configure a run); a variable set to the empty
+ * string counts as unset. The API key comes from the
  * `apiKey` option, else `OPENROUTER_API_KEY`, else `EVAL_OPENROUTER_API_KEY`.
  */
 export function resolveConfig(
   options: Readonly<Record<string, Raw>>,
   env: Readonly<Record<string, string | undefined>>,
 ): Config {
+  const set = (value: string | undefined): string | undefined =>
+    value !== undefined && value.trim() !== '' ? value : undefined;
   const raw = (key: ConfigKey): Raw =>
-    env[envName(key, 'EVAL_')] ?? env[envName(key)] ?? options[key];
+    set(env[envName(key, 'EVAL_')]) ?? set(env[envName(key)]) ?? options[key];
   const config: Config = { ...DEFAULT_CONFIG, gateTools: [...DEFAULT_CONFIG.gateTools] };
   const apiKey = asString(options.apiKey) ?? asString(env.OPENROUTER_API_KEY) ?? asString(env.EVAL_OPENROUTER_API_KEY);
   if (apiKey) config.apiKey = apiKey;

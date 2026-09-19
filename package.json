@@ -1,6 +1,6 @@
 {
   "name": "jev-context",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Claude Code mod: Jev-scored context pruning through OpenRouter.",
   "private": true,
   "type": "module",

@@ -44,15 +44,23 @@ export function noulOf(answers: Record<string, JevAnswer>, name: string): number
   return answer.noul;
 }
 
-/** The decision for one call from its two probabilities and the threshold. */
+/**
+ * The decision for one call from its two probabilities and the threshold. A
+ * result no longer than `truncateHeadChars` has nothing to truncate, so it
+ * is kept whole instead.
+ */
 export function decide(
   call: ToolCall,
   keepCall: number,
   keepResult: number,
   keepThreshold: number,
+  truncateHeadChars = 0,
 ): Decision {
   const base = { id: call.id, tool: call.tool, keepCall, keepResult, chars: pairChars(call) };
   if (keepResult >= keepThreshold) return { ...base, action: 'keep' };
-  if (keepCall >= keepThreshold) return { ...base, action: 'truncate_result' };
+  if (keepCall >= keepThreshold) {
+    if (call.resultChars <= truncateHeadChars) return { ...base, action: 'keep' };
+    return { ...base, action: 'truncate_result' };
+  }
   return { ...base, action: 'drop_call' };
 }

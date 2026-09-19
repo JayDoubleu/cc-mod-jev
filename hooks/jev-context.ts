@@ -88,35 +88,90 @@ function errorText(error: unknown): string {
 /**
  * The configuration, read once per activation: the plugin options, then the
  * environment (`$.env.get` takes literal names, so every variable the module
- * reads is listed here), then the `env` block of settings.json for the key.
+ * reads is listed here, one per `CONFIG_KEYS` entry and prefix), then the
+ * `env` block of settings.json for the key.
  */
 async function configOf($: EngineInterface, activation: Activation): Promise<Config> {
   if (activation.config) return activation.config;
+  const values = await Promise.all([
+    $.env.get('OPENROUTER_API_KEY'),
+    $.env.get('EVAL_OPENROUTER_API_KEY'),
+    $.env.get('JEV_CONTEXT_MODEL'),
+    $.env.get('EVAL_JEV_CONTEXT_MODEL'),
+    $.env.get('JEV_CONTEXT_BASE_URL'),
+    $.env.get('EVAL_JEV_CONTEXT_BASE_URL'),
+    $.env.get('JEV_CONTEXT_GOAL'),
+    $.env.get('EVAL_JEV_CONTEXT_GOAL'),
+    $.env.get('JEV_CONTEXT_KEEP_THRESHOLD'),
+    $.env.get('EVAL_JEV_CONTEXT_KEEP_THRESHOLD'),
+    $.env.get('JEV_CONTEXT_PRESERVE_RECENT_MESSAGES'),
+    $.env.get('EVAL_JEV_CONTEXT_PRESERVE_RECENT_MESSAGES'),
+    $.env.get('JEV_CONTEXT_MIN_PAIR_CHARS'),
+    $.env.get('EVAL_JEV_CONTEXT_MIN_PAIR_CHARS'),
+    $.env.get('JEV_CONTEXT_TRUNCATE_HEAD_CHARS'),
+    $.env.get('EVAL_JEV_CONTEXT_TRUNCATE_HEAD_CHARS'),
+    $.env.get('JEV_CONTEXT_MAX_STATE_TOKENS'),
+    $.env.get('EVAL_JEV_CONTEXT_MAX_STATE_TOKENS'),
+    $.env.get('JEV_CONTEXT_MAX_REQUEST_TOKENS'),
+    $.env.get('EVAL_JEV_CONTEXT_MAX_REQUEST_TOKENS'),
+    $.env.get('JEV_CONTEXT_COMPACT_AT_PERCENT'),
+    $.env.get('EVAL_JEV_CONTEXT_COMPACT_AT_PERCENT'),
+    $.env.get('JEV_CONTEXT_MIN_REDUCTION_RATIO'),
+    $.env.get('EVAL_JEV_CONTEXT_MIN_REDUCTION_RATIO'),
+    $.env.get('JEV_CONTEXT_GATE'),
+    $.env.get('EVAL_JEV_CONTEXT_GATE'),
+    $.env.get('JEV_CONTEXT_GATE_TOOLS'),
+    $.env.get('EVAL_JEV_CONTEXT_GATE_TOOLS'),
+    $.env.get('JEV_CONTEXT_GATE_MIN_CHARS'),
+    $.env.get('EVAL_JEV_CONTEXT_GATE_MIN_CHARS'),
+    $.env.get('JEV_CONTEXT_GATE_THRESHOLD'),
+    $.env.get('EVAL_JEV_CONTEXT_GATE_THRESHOLD'),
+    $.env.get('JEV_CONTEXT_GATE_HEAD_CHARS'),
+    $.env.get('EVAL_JEV_CONTEXT_GATE_HEAD_CHARS'),
+    $.env.get('JEV_CONTEXT_GATE_TAIL_CHARS'),
+    $.env.get('EVAL_JEV_CONTEXT_GATE_TAIL_CHARS'),
+    $.env.get('JEV_CONTEXT_LOG'),
+    $.env.get('EVAL_JEV_CONTEXT_LOG'),
+  ]);
   const env: Record<string, string | undefined> = {
-    OPENROUTER_API_KEY: await $.env.get('OPENROUTER_API_KEY'),
-    EVAL_OPENROUTER_API_KEY: await $.env.get('EVAL_OPENROUTER_API_KEY'),
-    JEV_CONTEXT_MODEL: await $.env.get('JEV_CONTEXT_MODEL'),
-    EVAL_JEV_CONTEXT_MODEL: await $.env.get('EVAL_JEV_CONTEXT_MODEL'),
-    JEV_CONTEXT_KEEP_THRESHOLD: await $.env.get('JEV_CONTEXT_KEEP_THRESHOLD'),
-    EVAL_JEV_CONTEXT_KEEP_THRESHOLD: await $.env.get('EVAL_JEV_CONTEXT_KEEP_THRESHOLD'),
-    JEV_CONTEXT_PRESERVE_RECENT_MESSAGES: await $.env.get('JEV_CONTEXT_PRESERVE_RECENT_MESSAGES'),
-    EVAL_JEV_CONTEXT_PRESERVE_RECENT_MESSAGES: await $.env.get('EVAL_JEV_CONTEXT_PRESERVE_RECENT_MESSAGES'),
-    JEV_CONTEXT_COMPACT_AT_PERCENT: await $.env.get('JEV_CONTEXT_COMPACT_AT_PERCENT'),
-    EVAL_JEV_CONTEXT_COMPACT_AT_PERCENT: await $.env.get('EVAL_JEV_CONTEXT_COMPACT_AT_PERCENT'),
-    JEV_CONTEXT_MIN_REDUCTION_RATIO: await $.env.get('JEV_CONTEXT_MIN_REDUCTION_RATIO'),
-    EVAL_JEV_CONTEXT_MIN_REDUCTION_RATIO: await $.env.get('EVAL_JEV_CONTEXT_MIN_REDUCTION_RATIO'),
-    JEV_CONTEXT_TRUNCATE_HEAD_CHARS: await $.env.get('JEV_CONTEXT_TRUNCATE_HEAD_CHARS'),
-    EVAL_JEV_CONTEXT_TRUNCATE_HEAD_CHARS: await $.env.get('EVAL_JEV_CONTEXT_TRUNCATE_HEAD_CHARS'),
-    JEV_CONTEXT_GATE: await $.env.get('JEV_CONTEXT_GATE'),
-    EVAL_JEV_CONTEXT_GATE: await $.env.get('EVAL_JEV_CONTEXT_GATE'),
-    JEV_CONTEXT_GATE_TOOLS: await $.env.get('JEV_CONTEXT_GATE_TOOLS'),
-    EVAL_JEV_CONTEXT_GATE_TOOLS: await $.env.get('EVAL_JEV_CONTEXT_GATE_TOOLS'),
-    JEV_CONTEXT_GATE_MIN_CHARS: await $.env.get('JEV_CONTEXT_GATE_MIN_CHARS'),
-    EVAL_JEV_CONTEXT_GATE_MIN_CHARS: await $.env.get('EVAL_JEV_CONTEXT_GATE_MIN_CHARS'),
-    JEV_CONTEXT_GATE_THRESHOLD: await $.env.get('JEV_CONTEXT_GATE_THRESHOLD'),
-    EVAL_JEV_CONTEXT_GATE_THRESHOLD: await $.env.get('EVAL_JEV_CONTEXT_GATE_THRESHOLD'),
-    JEV_CONTEXT_LOG: await $.env.get('JEV_CONTEXT_LOG'),
-    EVAL_JEV_CONTEXT_LOG: await $.env.get('EVAL_JEV_CONTEXT_LOG'),
+    OPENROUTER_API_KEY: values[0],
+    EVAL_OPENROUTER_API_KEY: values[1],
+    JEV_CONTEXT_MODEL: values[2],
+    EVAL_JEV_CONTEXT_MODEL: values[3],
+    JEV_CONTEXT_BASE_URL: values[4],
+    EVAL_JEV_CONTEXT_BASE_URL: values[5],
+    JEV_CONTEXT_GOAL: values[6],
+    EVAL_JEV_CONTEXT_GOAL: values[7],
+    JEV_CONTEXT_KEEP_THRESHOLD: values[8],
+    EVAL_JEV_CONTEXT_KEEP_THRESHOLD: values[9],
+    JEV_CONTEXT_PRESERVE_RECENT_MESSAGES: values[10],
+    EVAL_JEV_CONTEXT_PRESERVE_RECENT_MESSAGES: values[11],
+    JEV_CONTEXT_MIN_PAIR_CHARS: values[12],
+    EVAL_JEV_CONTEXT_MIN_PAIR_CHARS: values[13],
+    JEV_CONTEXT_TRUNCATE_HEAD_CHARS: values[14],
+    EVAL_JEV_CONTEXT_TRUNCATE_HEAD_CHARS: values[15],
+    JEV_CONTEXT_MAX_STATE_TOKENS: values[16],
+    EVAL_JEV_CONTEXT_MAX_STATE_TOKENS: values[17],
+    JEV_CONTEXT_MAX_REQUEST_TOKENS: values[18],
+    EVAL_JEV_CONTEXT_MAX_REQUEST_TOKENS: values[19],
+    JEV_CONTEXT_COMPACT_AT_PERCENT: values[20],
+    EVAL_JEV_CONTEXT_COMPACT_AT_PERCENT: values[21],
+    JEV_CONTEXT_MIN_REDUCTION_RATIO: values[22],
+    EVAL_JEV_CONTEXT_MIN_REDUCTION_RATIO: values[23],
+    JEV_CONTEXT_GATE: values[24],
+    EVAL_JEV_CONTEXT_GATE: values[25],
+    JEV_CONTEXT_GATE_TOOLS: values[26],
+    EVAL_JEV_CONTEXT_GATE_TOOLS: values[27],
+    JEV_CONTEXT_GATE_MIN_CHARS: values[28],
+    EVAL_JEV_CONTEXT_GATE_MIN_CHARS: values[29],
+    JEV_CONTEXT_GATE_THRESHOLD: values[30],
+    EVAL_JEV_CONTEXT_GATE_THRESHOLD: values[31],
+    JEV_CONTEXT_GATE_HEAD_CHARS: values[32],
+    EVAL_JEV_CONTEXT_GATE_HEAD_CHARS: values[33],
+    JEV_CONTEXT_GATE_TAIL_CHARS: values[34],
+    EVAL_JEV_CONTEXT_GATE_TAIL_CHARS: values[35],
+    JEV_CONTEXT_LOG: values[36],
+    EVAL_JEV_CONTEXT_LOG: values[37],
   };
   if (!env.OPENROUTER_API_KEY && !env.EVAL_OPENROUTER_API_KEY && !activation.options.apiKey) {
     const settings = await $.settings.read();
@@ -207,6 +262,10 @@ export const register: Register = (on, options) => {
     return next(e);
   });
 
+  on('session.compact', { trigger: 'precompute' }, () => ({
+    skip: `${PLUGIN} prunes at compaction time`,
+  }));
+
   on('session.compact', async ($, e, next) => {
     const config = await configOf($, activation);
     const pluginTriggered = e.trigger === 'plugin';
@@ -268,11 +327,13 @@ export const register: Register = (on, options) => {
 
   on('tool.call', async ($, e, next) => {
     const outcome = await next(e);
+    if (e.agentId !== undefined) return outcome;
     const config = await configOf($, activation);
     if (!config.gate || !config.apiKey || !config.gateTools.includes(e.tool)) return outcome;
     if (outcome.deny !== undefined || outcome.isError) return outcome;
-    const output = outputOf(e.tool, outcome.result, outcome.text);
+    const output = outputOf(e.tool, outcome.result);
     if (!output || output.length < config.gateMinChars) return outcome;
+    if (output.length <= config.gateHeadChars + config.gateTailChars) return outcome;
     try {
       const {
         tool: _tool,
@@ -282,10 +343,11 @@ export const register: Register = (on, options) => {
         ...input
       } = e as Record<string, unknown>;
       const recent = await $.session.messages();
-      const state = gateState(recent, e.tool, input, output, config);
+      const state = gateState(recent, e.tool, input, output, config, config.goal);
       const response = await askerOver(transportOf($), clientOf(config)).ask(state, gateQuestions());
       const need = noulOf(response.answers, GATE_QUESTION);
-      const cut = need < config.gateThreshold;
+      const result = need < config.gateThreshold ? cutResult(e.tool, outcome.result, config) : undefined;
+      const cut = result !== undefined;
       activation.gates.push({ tool: e.tool, chars: output.length, need, cut });
       if (activation.gates.length > 20) activation.gates.shift();
       await log(
@@ -294,9 +356,9 @@ export const register: Register = (on, options) => {
         `gate ${e.tool} ${output.length} chars: P(need full)=${need.toFixed(2)}, ${cut ? 'cut' : 'kept'}`,
       );
       if (!cut) return outcome;
-      const result = cutResult(e.tool, outcome.result, config);
-      if (result === undefined) return outcome;
-      return { result } as ToolCallResult;
+      const answer: ToolCallResult = { result } as ToolCallResult;
+      if (outcome.context !== undefined) answer.context = outcome.context;
+      return answer;
     } catch (error) {
       await log($, config, `gate skipped: ${errorText(error)}`);
       return outcome;
